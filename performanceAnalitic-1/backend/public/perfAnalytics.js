@@ -31,11 +31,10 @@ const calculatePerformanceMetrics = (performance) => {
 
 const postPerformanceMetrics = (performanceMetrics) => {
   analyticData = {
-    ...performanceMetrics,
+    data: performanceMetrics,
     origin: window.location.origin,
     url: window.location.href,
   };
-  console.log(analyticData);
   postData("http://localhost:3000/website", analyticData);
 };
 
