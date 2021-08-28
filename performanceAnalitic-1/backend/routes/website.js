@@ -7,7 +7,7 @@ const websiteService = require("../services/website-service");
 const router = express.Router();
 
 router.get("/all", async (req, res) => {
-  await websiteService.del("61281e57779caae391135805");
+  await websiteService.del("6129faccb7b89050146eac5a");
 
   const website = await websiteService.findAll();
   res.send(website);

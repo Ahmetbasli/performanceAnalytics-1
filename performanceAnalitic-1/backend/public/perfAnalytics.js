@@ -1,49 +1,45 @@
 const initialize = () => {
-  window.addEventListener("load", handleWindowLoad);
+  window.addEventListener("load", () => {
+    setTimeout(handleWindowLoad, 0);
+  });
 };
 
 const handleWindowLoad = () => {
-  const performance =
-    window.performance ||
-    window.webkitPerformance ||
-    window.mozPerformance ||
-    window.msPerformance;
+  //
+  const performance = window.performance;
   if (!performance) return;
 
-  const performanceMetrics = calculatePerformanceMetrics(performance);
-  postPerformanceMetrics(performanceMetrics);
-};
-
-const calculatePerformanceMetrics = (performance) => {
-  const ttfb =
-    performance.timing.responseStart - performance.timing.requestStart;
-  const fcp = performance.getEntriesByName("first-contentful-paint")[0]
+  // deprecated version(performance.timing) is used to support in all browsers
+  // time = performance.getEntriesByType("navigation")[0] is another option
+  const time = performance.timing;
+  const ttfb = time.responseStart - time.redirectStart;
+  const fcpTime = performance.getEntriesByName("first-contentful-paint")[0]
     .startTime;
+  const domLoadTime = time.domContentLoadedEventEnd - time.navigationStart;
+  const windowLoadTime = time.loadEventEnd - time.navigationStart;
+  const resourceLoadTimes = getResourceLoadTimings(performance);
 
-  const domLoad =
-    performance.timing.domContentLoadedEventEnd -
-    performance.timing.domContentLoadedEventStart;
-  const windowLoad = Date.now() - performance.timing.navigationStart;
-  const resourceLoadTimes = getResourceLoadTimes(performance);
-
-  return { ttfb, fcp, domLoad, windowLoad, resourceLoadTimes };
+  postPerformanceMetrics({
+    ttfb,
+    fcpTime,
+    domLoadTime,
+    windowLoadTime,
+    resourceLoadTimes,
+  });
 };
 
 const postPerformanceMetrics = (performanceMetrics) => {
-  analyticData = {
+  analyticsData = {
     data: performanceMetrics,
     origin: window.location.origin,
     url: window.location.href,
   };
-  postData("http://localhost:3000/website", analyticData);
+  postData("http://localhost:3000/website", analyticsData);
 };
 
 const postData = async (url = "", data = {}) => {
   const response = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(data),
   });
 
@@ -52,15 +48,20 @@ const postData = async (url = "", data = {}) => {
   return response.json();
 };
 
-const getResourceLoadTimes = (performance) => {
-  return performance.getEntriesByType("resource").map((element) => {
-    return {
-      name: element.name,
-      duration: element.duration,
-      transferSize: element.transferSize,
-      initiatorType: element.initiatorType,
-    };
-  });
+const getResourceLoadTimings = (performance) => {
+  return performance
+    .getEntriesByType("resource")
+    .filter((element) => {
+      return element.initiatorType;
+    })
+    .map((element) => {
+      return {
+        name: element.name,
+        initiatorType: element.initiatorType,
+        transferSize: element.transferSize,
+        duration: element.duration,
+      };
+    });
 };
 
 initialize();
