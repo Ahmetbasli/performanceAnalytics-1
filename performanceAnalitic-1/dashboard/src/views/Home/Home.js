@@ -11,11 +11,13 @@ const Home = () => {
   const origin = useSelector(searchedOrigin);
 
   return (
-    <div className="bg-gray-400 ">
+    <div className=" ">
       <Search />
       <h1>{origin}hello</h1>
 
-      <Graph datas={website.analyticsDatas} />
+      <Graph datas={website.analyticsDatas} metric="ttfb" />
+
+      <Graph datas={website.analyticsDatas} metric="fbc" />
     </div>
   );
 };
