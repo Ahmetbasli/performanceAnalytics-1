@@ -1,2 +1,9 @@
 POST http://localhost:3000/website
 
+###
+GET  http://localhost:3000/website/getOneByOrigin HTTP/1.1
+content-type: application/json
+
+{
+    "url": "https://basli-ahmetbasli.vercel.app/#"
+}

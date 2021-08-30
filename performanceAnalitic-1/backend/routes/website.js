@@ -1,23 +1,32 @@
 const express = require("express");
 const {
   addNewAnalyticsData,
-  findOneByUrl,
+  findOneByOrigin,
 } = require("../services/website-service");
 const websiteService = require("../services/website-service");
 const router = express.Router();
 
 router.get("/all", async (req, res) => {
-  await websiteService.del("6129faccb7b89050146eac5a");
+  await websiteService.del("612c1d6a45d522cce9598e88");
 
-  const website = await websiteService.findAll();
+  var today = new Date();
+  console.log(today);
+  const websites = await websiteService.findAll();
+  res.send(websites);
+});
+
+router.get("/getByUrl", async (req, res) => {
+  const url = new URL(req.query.url);
+  const website = await websiteService.findOneByOrigin(url.origin);
+
+  if (!website) res.status(404);
   res.send(website);
 });
-// getting analitics data
 
 router.post("/", async (req, res) => {
   const { data, origin, url } = req.body;
 
-  const website = await websiteService.findOneByUrl(url);
+  const website = await websiteService.findOneByOrigin(origin);
 
   if (!website)
     await websiteService.add({ analyticsDatas: [data], origin, url });

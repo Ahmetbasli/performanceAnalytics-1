@@ -5,14 +5,12 @@ const initialize = () => {
 };
 
 const handleWindowLoad = () => {
-  //
   const performance = window.performance;
   if (!performance) return;
-
-  // deprecated version(performance.timing) is used to support in all browsers
+  // performance.timing is deprecated, but used here for browser compatibility
   // time = performance.getEntriesByType("navigation")[0] is another option
   const time = performance.timing;
-  const ttfb = time.responseStart - time.redirectStart;
+  const ttfb = time.responseStart - time.navigationStart;
   const fcpTime = performance.getEntriesByName("first-contentful-paint")[0]
     .startTime;
   const domLoadTime = time.domContentLoadedEventEnd - time.navigationStart;
@@ -25,6 +23,7 @@ const handleWindowLoad = () => {
     domLoadTime,
     windowLoadTime,
     resourceLoadTimes,
+    creationDate: new Date(),
   });
 };
 
@@ -37,9 +36,12 @@ const postPerformanceMetrics = (performanceMetrics) => {
   postData("http://localhost:3000/website", analyticsData);
 };
 
-const postData = async (url = "", data = {}) => {
-  const response = await fetch(url, {
+const postData = async (endpoint = "", data = {}) => {
+  const response = await fetch(endpoint, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(data),
   });
 
